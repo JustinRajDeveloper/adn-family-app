@@ -3,449 +3,945 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta name="theme-color" content="#ff6b35">
+<meta name="theme-color" content="#2d6a4f">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Our Family 🏡</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-
-<!-- ✅ Supabase SDK -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,500&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
 :root {
-  --orange: #ff6b35; --amber: #ffa040; --green: #06d6a0;
-  --pink: #ef476f; --blue: #118ab2; --yellow: #ffd166;
-  --cream: #fff9f0; --dark: #1a1205; --shadow: 0 4px 24px rgba(255,107,53,0.12);
+  --forest: #2d6a4f;
+  --sage:   #52b788;
+  --mint:   #b7e4c7;
+  --gold:   #f4a261;
+  --warm:   #e76f51;
+  --cream:  #faf7f2;
+  --white:  #ffffff;
+  --dark:   #1b2d22;
+  --muted:  #8a9e90;
+  --shadow: 0 4px 24px rgba(45,106,79,0.10);
+  --radius: 18px;
 }
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 body {
-  font-family:'Nunito',sans-serif; background:var(--cream); color:var(--dark);
-  min-height:100vh; max-width:430px; margin:0 auto; padding-bottom:90px; overflow-x:hidden;
+  font-family:'Nunito',sans-serif; background:var(--cream);
+  color:var(--dark); min-height:100vh; max-width:430px;
+  margin:0 auto; overflow-x:hidden; padding-bottom:86px;
 }
 
-/* ── Setup Banner ── */
-#setupBanner {
-  background: linear-gradient(135deg,#1a1a2e,#16213e);
-  color:white; padding:20px; margin:0; font-size:0.82rem; line-height:1.6;
+/* ══ LOGIN SCREEN ══ */
+#loginScreen {
+  min-height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; padding:32px 24px;
+  background: linear-gradient(160deg, #1b2d22 0%, #2d6a4f 50%, #52b788 100%);
+  position:relative; overflow:hidden;
 }
-#setupBanner h3 { font-size:1rem; margin-bottom:10px; color:var(--yellow); }
-#setupBanner code { background:rgba(255,255,255,0.12); padding:2px 7px; border-radius:5px; font-size:0.78rem; }
-.setup-inputs { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
-.setup-input {
-  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2);
-  border-radius:8px; padding:10px 12px; color:white; font-family:'Nunito',sans-serif;
+#loginScreen::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(circle at 30% 20%, rgba(82,183,136,0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(244,162,97,0.2) 0%, transparent 40%);
+}
+.login-card {
+  background:rgba(255,255,255,0.07); backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.15); border-radius:28px;
+  padding:40px 32px; text-align:center; width:100%; max-width:340px;
+  position:relative; z-index:1;
+}
+.login-emoji { font-size:3.5rem; display:block; margin-bottom:16px; }
+.login-title {
+  font-family:'Fraunces',serif; font-size:2.2rem; font-weight:700;
+  color:white; line-height:1.1; margin-bottom:8px;
+}
+.login-title em { font-style:italic; font-weight:300; color:var(--mint); }
+.login-sub { color:rgba(255,255,255,0.6); font-size:0.88rem; font-weight:600; margin-bottom:32px; line-height:1.5; }
+.google-btn {
+  width:100%; background:white; border:none; border-radius:14px;
+  padding:15px 20px; display:flex; align-items:center; justify-content:center; gap:12px;
+  font-family:'Nunito',sans-serif; font-size:0.95rem; font-weight:800; color:#1a1a1a;
+  cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;
+  box-shadow:0 4px 20px rgba(0,0,0,0.25);
+}
+.google-btn:hover { transform:translateY(-2px); box-shadow:0 8px 30px rgba(0,0,0,0.3); }
+.google-btn:active { transform:translateY(0); }
+.google-icon { width:22px; height:22px; flex-shrink:0; }
+.login-note { color:rgba(255,255,255,0.35); font-size:0.72rem; margin-top:16px; font-weight:600; }
+
+/* Setup warning */
+#setupWarning {
+  background:rgba(244,162,97,0.15); border:1px solid rgba(244,162,97,0.3);
+  border-radius:12px; padding:14px 16px; margin-bottom:20px; text-align:left; display:none;
+}
+#setupWarning p { color:rgba(255,255,255,0.8); font-size:0.78rem; font-weight:600; line-height:1.5; }
+#setupWarning code { background:rgba(255,255,255,0.15); padding:1px 6px; border-radius:4px; font-size:0.72rem; }
+.config-inputs { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+.config-input {
+  background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
+  border-radius:10px; padding:10px 14px; color:white; font-family:'Nunito',sans-serif;
   font-size:0.82rem; outline:none; width:100%;
 }
-.setup-input::placeholder { color:rgba(255,255,255,0.4); }
-.setup-btn {
-  background:var(--orange); color:white; border:none; border-radius:8px;
-  padding:10px 16px; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.85rem;
-  cursor:pointer; width:100%; margin-top:4px;
+.config-input::placeholder { color:rgba(255,255,255,0.35); }
+.config-btn {
+  width:100%; background:var(--gold); color:white; border:none; border-radius:10px;
+  padding:11px; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.85rem; cursor:pointer;
 }
-.setup-status { font-size:0.75rem; margin-top:8px; padding:6px 10px; border-radius:6px; display:none; }
-.setup-status.ok { background:rgba(6,214,160,0.2); color:#06d6a0; display:block; }
-.setup-status.err { background:rgba(239,71,111,0.2); color:#ef476f; display:block; }
 
-/* ── Header ── */
+/* ══ APP SHELL ══ */
+#appShell { display:none; }
+
+/* Header */
 .app-header {
-  background:linear-gradient(135deg,var(--orange),var(--amber));
-  padding:40px 24px 24px; position:relative; overflow:hidden;
+  background:linear-gradient(135deg, var(--forest), var(--sage));
+  padding:48px 20px 20px; position:relative; overflow:hidden;
 }
-.app-header::before {
-  content:''; position:absolute; inset:0;
-  background:radial-gradient(circle at 70% 50%, rgba(255,255,255,0.12) 0%, transparent 60%);
+.app-header::after {
+  content:''; position:absolute; bottom:-1px; left:0; right:0; height:20px;
+  background:var(--cream); border-radius:20px 20px 0 0;
 }
-.header-row { display:flex; align-items:center; justify-content:space-between; position:relative; }
-.header-title { font-family:'Fraunces',serif; font-size:1.9rem; color:white; font-weight:700; line-height:1.1; }
-.header-title span { font-style:italic; font-weight:300; font-size:0.9rem; color:rgba(255,255,255,0.8); display:block; margin-bottom:2px; }
-.conn-badge {
-  display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.2);
-  border-radius:50px; padding:6px 12px; font-size:0.7rem; font-weight:800; color:white;
+.header-inner { display:flex; align-items:center; gap:12px; position:relative; }
+.user-avatar {
+  width:46px; height:46px; border-radius:50%; object-fit:cover;
+  border:2px solid rgba(255,255,255,0.5); flex-shrink:0;
 }
-.conn-dot { width:7px; height:7px; border-radius:50%; background:#aaa; }
-.conn-dot.live { background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.user-avatar-fallback {
+  width:46px; height:46px; border-radius:50%;
+  background:rgba(255,255,255,0.2); border:2px solid rgba(255,255,255,0.4);
+  display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;
+}
+.header-text { flex:1; }
+.header-greeting { color:rgba(255,255,255,0.7); font-size:0.75rem; font-weight:700; }
+.header-name { font-family:'Fraunces',serif; font-size:1.3rem; font-weight:700; color:white; }
+.header-actions { display:flex; gap:8px; }
+.icon-btn {
+  width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,0.18);
+  border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1rem;
+}
+.live-dot {
+  display:flex; align-items:center; gap:5px;
+  background:rgba(255,255,255,0.15); border-radius:50px;
+  padding:5px 10px; font-size:0.65rem; font-weight:800; color:rgba(255,255,255,0.9);
+}
+.live-dot::before {
+  content:''; width:6px; height:6px; border-radius:50%; background:#69ff97;
+  box-shadow:0 0 6px #69ff97; animation:blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* ── Nav ── */
+/* ══ BOTTOM NAV ══ */
 .bottom-nav {
   position:fixed; bottom:0; left:50%; transform:translateX(-50%);
   width:100%; max-width:430px; background:white;
-  display:flex; border-top:1px solid rgba(0,0,0,0.07); z-index:100;
-  box-shadow:0 -4px 20px rgba(0,0,0,0.08); border-radius:20px 20px 0 0; overflow:hidden;
+  display:flex; border-top:1px solid rgba(0,0,0,0.06); z-index:100;
+  box-shadow:0 -4px 24px rgba(0,0,0,0.07); border-radius:20px 20px 0 0; overflow:hidden;
 }
 .nav-btn {
   flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
   padding:12px 0 8px; background:none; border:none; cursor:pointer;
-  font-family:'Nunito',sans-serif; font-size:0.62rem; font-weight:800; color:#ccc;
-  letter-spacing:0.5px; text-transform:uppercase; transition:color 0.2s;
+  font-family:'Nunito',sans-serif; font-size:0.6rem; font-weight:800;
+  color:#ccc; letter-spacing:0.5px; text-transform:uppercase; transition:color 0.2s;
 }
-.nav-icon { font-size:1.4rem; margin-bottom:3px; transition:transform 0.2s; }
-.nav-btn.active { color:var(--orange); }
-.nav-btn.active .nav-icon { transform:scale(1.15); }
+.nav-icon { font-size:1.45rem; margin-bottom:3px; transition:transform 0.2s; }
+.nav-btn.active { color:var(--forest); }
+.nav-btn.active .nav-icon { transform:scale(1.18); }
 
-/* ── Sections ── */
-.section { display:none; padding:0 16px 16px; animation:fadeIn 0.3s ease; }
+/* ══ SECTIONS ══ */
+.section { display:none; padding:0 16px 16px; animation:up 0.28s ease; }
 .section.active { display:block; }
-@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-.sec-header { padding:18px 0 12px; display:flex; align-items:center; justify-content:space-between; }
-.sec-title { font-family:'Fraunces',serif; font-size:1.4rem; font-weight:700; }
-.sec-action {
-  background:var(--orange); color:white; border:none; border-radius:50px;
-  padding:8px 16px; font-size:0.78rem; font-weight:800; font-family:'Nunito',sans-serif; cursor:pointer;
+@keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.sec-head { padding:18px 0 12px; display:flex; align-items:center; justify-content:space-between; }
+.sec-title { font-family:'Fraunces',serif; font-size:1.45rem; font-weight:700; }
+.pill-btn {
+  background:var(--forest); color:white; border:none; border-radius:50px;
+  padding:8px 18px; font-size:0.78rem; font-weight:800; font-family:'Nunito',sans-serif; cursor:pointer;
+  transition:opacity 0.2s;
+}
+.pill-btn:hover { opacity:0.88; }
+.pill-btn.outline {
+  background:transparent; color:var(--forest); border:2px solid var(--forest);
 }
 
-/* ── Photo Grid ── */
-.photo-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+/* ══ PHOTOS ══ */
+.photo-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; border-radius:16px; overflow:hidden; }
 .photo-cell {
-  aspect-ratio:1; border-radius:10px; overflow:hidden; position:relative; cursor:pointer;
-  background:linear-gradient(135deg,#ffe4cc,#ffd6b3);
+  aspect-ratio:1; position:relative; overflow:hidden; cursor:pointer;
+  background:linear-gradient(135deg,var(--mint),#d8f3dc);
   display:flex; align-items:center; justify-content:center; font-size:2rem;
-  transition:transform 0.2s;
+  transition:transform 0.18s;
 }
 .photo-cell:active { transform:scale(0.96); }
-.photo-cell img { width:100%; height:100%; object-fit:cover; }
-.photo-cell .photo-label {
+.photo-cell img { width:100%; height:100%; object-fit:cover; display:block; }
+.photo-cell .ph-meta {
   position:absolute; bottom:0; left:0; right:0;
-  background:linear-gradient(transparent,rgba(0,0,0,0.55));
-  color:white; font-size:0.62rem; font-weight:800; padding:8px 5px 5px;
+  background:linear-gradient(transparent,rgba(0,0,0,0.6));
+  padding:14px 7px 6px;
 }
-.photo-cell .uploader-tag {
-  position:absolute; top:5px; right:5px;
-  background:rgba(0,0,0,0.5); color:white; font-size:0.55rem; font-weight:700;
-  padding:2px 6px; border-radius:50px;
+.ph-uploader {
+  display:flex; align-items:center; gap:4px;
 }
+.ph-avatar { width:16px; height:16px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.5); }
+.ph-name { color:white; font-size:0.6rem; font-weight:800; }
+.ph-time { color:rgba(255,255,255,0.65); font-size:0.55rem; font-weight:600; display:block; margin-top:1px; }
 
-.upload-area {
-  border:2px dashed rgba(255,107,53,0.3); border-radius:16px; padding:22px;
-  text-align:center; margin-top:14px; background:rgba(255,107,53,0.04); cursor:pointer;
-  transition:background 0.2s; display:block;
+.upload-zone {
+  border:2px dashed rgba(45,106,79,0.25); border-radius:16px; padding:24px;
+  text-align:center; margin-top:12px; background:rgba(45,106,79,0.03);
+  cursor:pointer; transition:background 0.2s; display:block;
 }
-.upload-area:hover { background:rgba(255,107,53,0.09); }
-.upload-area input { display:none; }
-.upload-area .u-icon { font-size:2rem; margin-bottom:8px; display:block; }
-.upload-area p { font-size:0.82rem; color:#aaa; font-weight:700; }
+.upload-zone:hover { background:rgba(45,106,79,0.07); }
+.upload-zone input { display:none; }
+.upload-zone .uz-icon { font-size:2rem; display:block; margin-bottom:8px; }
+.upload-zone p { font-size:0.82rem; color:var(--muted); font-weight:700; }
+.upload-zone small { font-size:0.7rem; color:#bbb; font-weight:600; }
 
-/* Uploading spinner */
-.uploading-bar {
+.uploading {
   background:white; border-radius:14px; padding:14px 16px; margin-top:10px;
   box-shadow:var(--shadow); display:none; align-items:center; gap:12px;
 }
-.uploading-bar.show { display:flex; }
-.spin { width:22px; height:22px; border:3px solid #f0f0f0; border-top-color:var(--orange);
+.uploading.show { display:flex; }
+.spin { width:22px; height:22px; border:3px solid #e8f5e9; border-top-color:var(--forest);
   border-radius:50%; animation:spin 0.7s linear infinite; flex-shrink:0; }
 @keyframes spin { to{transform:rotate(360deg)} }
-.uploading-bar p { font-size:0.82rem; font-weight:700; color:#888; }
+.uploading p { font-size:0.82rem; font-weight:700; color:var(--muted); }
 
-/* ── Name Input ── */
-.name-bar {
-  background:white; border-radius:14px; padding:12px 16px; margin-bottom:14px;
-  box-shadow:var(--shadow); display:flex; align-items:center; gap:10px;
+.empty-state {
+  text-align:center; padding:40px 20px; color:var(--muted);
 }
-.name-bar span { font-size:1.2rem; }
-.name-input {
-  flex:1; border:none; outline:none; font-family:'Nunito',sans-serif;
-  font-size:0.9rem; font-weight:700; color:var(--dark); background:none;
-}
-.name-input::placeholder { color:#ccc; }
+.empty-state .es-icon { font-size:3rem; display:block; margin-bottom:12px; }
+.empty-state p { font-weight:700; font-size:0.9rem; }
+.empty-state small { font-size:0.78rem; color:#bbb; }
 
-/* ── How It Works ── */
-.how-card {
-  background:white; border-radius:16px; padding:18px; box-shadow:var(--shadow); margin-top:14px;
+/* Members strip */
+.members-strip { display:flex; gap:10px; overflow-x:auto; padding:4px 0 12px; scrollbar-width:none; margin-bottom:4px; }
+.members-strip::-webkit-scrollbar { display:none; }
+.member-chip {
+  flex-shrink:0; background:white; border-radius:50px; padding:7px 14px 7px 8px;
+  box-shadow:var(--shadow); display:flex; align-items:center; gap:8px;
 }
-.how-title { font-weight:800; font-size:0.85rem; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
-.how-step { display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
-.how-num { width:26px; height:26px; border-radius:50%; background:var(--orange); color:white; font-size:0.75rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.how-text { font-size:0.82rem; font-weight:600; color:#666; line-height:1.4; }
-.how-text strong { color:var(--dark); }
+.member-chip img { width:26px; height:26px; border-radius:50%; object-fit:cover; }
+.member-chip .mc-name { font-size:0.75rem; font-weight:800; color:var(--dark); }
+.member-chip .mc-count { font-size:0.65rem; color:var(--muted); font-weight:600; }
 
-/* ── Toast ── */
+/* ══ EVENTS ══ */
+.month-nav {
+  background:white; border-radius:16px; padding:14px 18px;
+  display:flex; align-items:center; justify-content:space-between;
+  box-shadow:var(--shadow); margin-bottom:12px;
+}
+.month-name { font-family:'Fraunces',serif; font-size:1.15rem; font-weight:700; }
+.mo-btn { background:var(--cream); border:none; border-radius:10px; width:34px; height:34px; cursor:pointer; font-size:1rem; }
+.cal-grid {
+  background:white; border-radius:16px; padding:14px;
+  display:grid; grid-template-columns:repeat(7,1fr); gap:3px;
+  box-shadow:var(--shadow); margin-bottom:12px;
+}
+.cal-dname { text-align:center; font-size:0.6rem; font-weight:800; color:#ccc; padding:4px 0; letter-spacing:1px; text-transform:uppercase; }
+.cal-day {
+  aspect-ratio:1; border-radius:9px; display:flex; align-items:center; justify-content:center;
+  font-size:0.82rem; font-weight:600; cursor:pointer; transition:background 0.15s; position:relative;
+}
+.cal-day:hover { background:var(--cream); }
+.cal-day.today { background:var(--forest); color:white; font-weight:900; }
+.cal-day.has-event::after { content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--gold); }
+.cal-day.today.has-event::after { background:white; }
+.cal-day.other { color:#ddd; }
+
+.event-card {
+  background:white; border-radius:14px; padding:13px 15px;
+  box-shadow:var(--shadow); display:flex; align-items:center; gap:12px; margin-bottom:9px;
+}
+.ev-icon { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+.ev-icon.birthday { background:rgba(244,162,97,0.15); }
+.ev-icon.anniversary { background:rgba(231,111,81,0.12); }
+.ev-icon.holiday { background:rgba(82,183,136,0.12); }
+.ev-icon.family { background:rgba(45,106,79,0.1); }
+.ev-info { flex:1; }
+.ev-name { font-weight:800; font-size:0.92rem; margin-bottom:2px; }
+.ev-date { font-size:0.72rem; color:var(--muted); font-weight:600; }
+.ev-badge { font-size:0.68rem; font-weight:800; color:var(--forest); background:rgba(45,106,79,0.1); padding:3px 10px; border-radius:50px; }
+
+/* form */
+.card { background:white; border-radius:16px; padding:18px; box-shadow:var(--shadow); margin-bottom:12px; }
+.form-label { font-size:0.72rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:5px; }
+.form-input {
+  width:100%; border:2px solid #f0f0f0; border-radius:10px; padding:10px 13px;
+  font-family:'Nunito',sans-serif; font-size:0.88rem; font-weight:700; color:var(--dark);
+  outline:none; transition:border-color 0.2s; margin-bottom:11px;
+}
+.form-input:focus { border-color:var(--sage); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+/* ══ GAMES ══ */
+.games-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+.game-card {
+  background:white; border-radius:20px; padding:20px 14px;
+  box-shadow:var(--shadow); text-align:center; cursor:pointer;
+  transition:transform 0.18s, box-shadow 0.18s;
+}
+.game-card:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(45,106,79,0.15); }
+.game-card .gi { font-size:2.4rem; display:block; margin-bottom:10px; }
+.game-card .gt { font-weight:800; font-size:0.88rem; margin-bottom:4px; }
+.game-card .gd { font-size:0.7rem; color:var(--muted); font-weight:600; }
+.game-badge { display:inline-block; background:rgba(244,162,97,0.15); color:#c47320; font-size:0.62rem; font-weight:800; padding:2px 8px; border-radius:50px; margin-top:6px; }
+
+/* quiz */
+.quiz-wrap { background:white; border-radius:20px; padding:22px; box-shadow:var(--shadow); }
+.quiz-prog { display:flex; gap:4px; margin-bottom:16px; }
+.qp-dot { flex:1; height:5px; border-radius:10px; background:#f0f0f0; transition:background 0.3s; }
+.qp-dot.done { background:var(--forest); }
+.qp-dot.cur { background:var(--sage); }
+.quiz-q { font-family:'Fraunces',serif; font-size:1.1rem; font-weight:700; margin-bottom:18px; line-height:1.4; }
+.quiz-opts { display:flex; flex-direction:column; gap:9px; }
+.qopt {
+  border:2px solid #f0f0f0; border-radius:13px; padding:12px 15px;
+  font-weight:700; font-size:0.88rem; cursor:pointer; transition:all 0.18s;
+  background:none; font-family:'Nunito',sans-serif; text-align:left;
+}
+.qopt:hover { border-color:var(--sage); background:rgba(82,183,136,0.06); }
+.qopt.correct { border-color:var(--sage); background:rgba(82,183,136,0.12); color:#1b5e3b; }
+.qopt.wrong { border-color:var(--warm); background:rgba(231,111,81,0.09); color:#8b2500; }
+.score-wrap { text-align:center; padding:18px 0; }
+.score-num { font-family:'Fraunces',serif; font-size:4rem; font-weight:700; color:var(--forest); }
+.score-lbl { font-size:0.88rem; color:var(--muted); font-weight:600; }
+
+/* memory */
+.game-stats { display:flex; gap:10px; margin-bottom:12px; }
+.stat-c { flex:1; background:white; border-radius:12px; padding:10px; text-align:center; box-shadow:var(--shadow); }
+.stat-n { font-family:'Fraunces',serif; font-size:1.35rem; font-weight:700; color:var(--forest); }
+.stat-l { font-size:0.62rem; color:#bbb; font-weight:800; text-transform:uppercase; letter-spacing:1px; }
+.match-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }
+.mc {
+  aspect-ratio:1; border-radius:12px; cursor:pointer;
+  background:linear-gradient(135deg,var(--forest),var(--sage));
+  display:flex; align-items:center; justify-content:center;
+  font-size:1.3rem; position:relative; transition:transform 0.35s;
+  transform-style:preserve-3d;
+}
+.mc.flip { transform:rotateY(180deg); }
+.mc.matched { opacity:0.45; pointer-events:none; }
+.mc .mfront, .mc .mback {
+  position:absolute; inset:0; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  backface-visibility:hidden; font-size:1.4rem;
+}
+.mc .mfront { color:rgba(255,255,255,0.4); font-size:1rem; font-weight:900; }
+.mc .mback { background:white; border:2px solid #f0f0f0; transform:rotateY(180deg); }
+
+/* ══ PROFILE SECTION ══ */
+.profile-hero {
+  background:linear-gradient(135deg,var(--forest),var(--sage));
+  border-radius:20px; padding:28px; text-align:center; margin-bottom:14px;
+  box-shadow:var(--shadow);
+}
+.profile-hero img { width:72px; height:72px; border-radius:50%; object-fit:cover; border:3px solid rgba(255,255,255,0.5); margin-bottom:12px; }
+.profile-hero .p-name { font-family:'Fraunces',serif; font-size:1.4rem; color:white; font-weight:700; }
+.profile-hero .p-email { color:rgba(255,255,255,0.65); font-size:0.8rem; font-weight:600; margin-top:4px; }
+.logout-btn {
+  width:100%; background:rgba(231,111,81,0.1); color:var(--warm); border:2px solid rgba(231,111,81,0.2);
+  border-radius:12px; padding:13px; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.9rem; cursor:pointer; margin-top:14px;
+}
+
+/* ══ TOAST ══ */
 #toast {
-  position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px);
+  position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(16px);
   background:var(--dark); color:white; padding:10px 20px; border-radius:50px;
-  font-size:0.82rem; font-weight:700; opacity:0; transition:all 0.3s; z-index:999; white-space:nowrap;
+  font-size:0.82rem; font-weight:700; opacity:0; transition:all 0.28s; z-index:9999; white-space:nowrap;
 }
 #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+.hidden { display:none !important; }
 </style>
 </head>
 <body>
 
-<!-- ══ SETUP BANNER ══ -->
-<div id="setupBanner">
-  <h3>⚡ Step 1 — Connect Supabase</h3>
-  <p>Create a free project at <code>supabase.com</code>, then paste your credentials below. Only takes 2 minutes!</p>
-  <div class="setup-inputs">
-    <input class="setup-input" id="sbUrl" placeholder="Project URL  (https://xxxx.supabase.co)" type="url">
-    <input class="setup-input" id="sbKey" placeholder="Anon public key  (eyJ...)" type="text">
-    <button class="setup-btn" onclick="connectSupabase()">🔌 Connect & Test</button>
-  </div>
-  <div class="setup-status" id="setupStatus"></div>
-</div>
+<!-- ══════════ LOGIN SCREEN ══════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <span class="login-emoji">🏡</span>
+    <div class="login-title">Our<br><em>Family</em></div>
+    <p class="login-sub">Share photos, celebrate moments,<br>and play together — anytime.</p>
 
-<!-- ══ APP HEADER ══ -->
-<div class="app-header">
-  <div class="header-row">
-    <div class="header-title"><span>Welcome to</span>Our Family</div>
-    <div class="conn-badge">
-      <div class="conn-dot" id="connDot"></div>
-      <span id="connLabel">Not connected</span>
+    <!-- Config (shown only if not set) -->
+    <div id="setupWarning">
+      <p>Paste your <code>Supabase URL</code> and <code>anon key</code> to connect:</p>
+      <div class="config-inputs" style="margin-top:10px;">
+        <input class="config-input" id="cfgUrl" placeholder="https://xxxx.supabase.co" type="url">
+        <input class="config-input" id="cfgKey" placeholder="eyJ... anon key" type="text">
+        <button class="config-btn" onclick="saveConfig()">Save & Continue</button>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- ══ PHOTOS SECTION ══ -->
-<div class="section active" id="sec-photos">
-  <div class="sec-header">
-    <div class="sec-title">📸 Memories</div>
-    <button class="sec-action" onclick="document.getElementById('photoFile').click()">+ Add Photo</button>
-  </div>
-
-  <!-- Your name -->
-  <div class="name-bar">
-    <span>👤</span>
-    <input class="name-input" id="uploaderName" placeholder="Your name (shows on photo)" maxlength="20">
-  </div>
-
-  <!-- Uploading indicator -->
-  <div class="uploading-bar" id="uploadingBar">
-    <div class="spin"></div>
-    <p>Uploading to Supabase…</p>
-  </div>
-
-  <!-- Photo grid -->
-  <div class="photo-grid" id="photoGrid">
-    <div class="photo-cell" style="background:linear-gradient(135deg,#ffd6b3,#ffb380)">🌅
-      <div class="photo-label">Add your first photo!</div>
-    </div>
-  </div>
-
-  <label class="upload-area" for="photoFile">
-    <input type="file" id="photoFile" accept="image/*" onchange="uploadPhoto(event)">
-    <span class="u-icon">📷</span>
-    <p>Tap to upload — family sees it instantly</p>
-  </label>
-
-  <!-- How it works -->
-  <div class="how-card">
-    <div class="how-title">How shared photos work</div>
-    <div class="how-step">
-      <div class="how-num">1</div>
-      <div class="how-text"><strong>You upload a photo</strong> — it goes straight to Supabase Storage (cloud)</div>
-    </div>
-    <div class="how-step">
-      <div class="how-num">2</div>
-      <div class="how-text"><strong>Supabase stores the file</strong> + saves the URL & your name in a database table</div>
-    </div>
-    <div class="how-step">
-      <div class="how-num">3</div>
-      <div class="how-text"><strong>Anyone who opens this app</strong> fetches all photos from the same database — they see everything!</div>
-    </div>
+    <button class="google-btn" onclick="loginWithGoogle()">
+      <svg class="google-icon" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      Continue with Google
+    </button>
+    <p class="login-note">Only family members can sign in</p>
   </div>
 </div>
 
-<!-- ══ BOTTOM NAV ══ -->
-<nav class="bottom-nav">
-  <button class="nav-btn active" onclick="showSection('photos',this)">
-    <span class="nav-icon">📸</span>Photos
-  </button>
-  <button class="nav-btn" onclick="showSection('info',this)">
-    <span class="nav-icon">📖</span>Setup Guide
-  </button>
-</nav>
+<!-- ══════════ APP SHELL ══════════ -->
+<div id="appShell">
 
-<!-- Info / Setup Guide Section -->
-<div class="section" id="sec-info">
-  <div class="sec-header"><div class="sec-title">📖 Setup Guide</div></div>
-
-  <div class="how-card" style="margin-bottom:12px;">
-    <div class="how-title">🛠 One-time Supabase Setup (5 min)</div>
-
-    <div class="how-step">
-      <div class="how-num">1</div>
-      <div class="how-text">Go to <strong>supabase.com</strong> → New Project → pick a name like "family-app"</div>
-    </div>
-    <div class="how-step">
-      <div class="how-num">2</div>
-      <div class="how-text">In <strong>Storage</strong> → Create bucket called <strong>photos</strong> → set to <strong>Public</strong></div>
-    </div>
-    <div class="how-step">
-      <div class="how-num">3</div>
-      <div class="how-text">In <strong>SQL Editor</strong> → run this query to create the photos table:</div>
-    </div>
-    <pre style="background:#f5f5f5;border-radius:10px;padding:12px;font-size:0.72rem;overflow-x:auto;margin:8px 0 10px;line-height:1.6;">CREATE TABLE photos (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  url text NOT NULL,
-  uploader text DEFAULT 'Family',
-  caption text,
-  created_at timestamptz DEFAULT now()
-);
-
--- Allow anyone to read & insert
-ALTER TABLE photos ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "public read" ON photos FOR SELECT USING (true);
-CREATE POLICY "public insert" ON photos FOR INSERT WITH CHECK (true);</pre>
-
-    <div class="how-step">
-      <div class="how-num">4</div>
-      <div class="how-text">In <strong>Storage → Policies</strong> → add policy: allow <strong>public uploads</strong> to the photos bucket</div>
-    </div>
-    <div class="how-step">
-      <div class="how-num">5</div>
-      <div class="how-text">Go to <strong>Project Settings → API</strong> → copy <strong>Project URL</strong> and <strong>anon public key</strong></div>
-    </div>
-    <div class="how-step">
-      <div class="how-num">6</div>
-      <div class="how-text">Paste both into the <strong>Connect Supabase</strong> form at the top — done! 🎉</div>
+  <!-- Header -->
+  <div class="app-header">
+    <div class="header-inner">
+      <div id="headerAvatarWrap">
+        <div class="user-avatar-fallback">👤</div>
+      </div>
+      <div class="header-text">
+        <div class="header-greeting">Good day,</div>
+        <div class="header-name" id="headerName">Family Member</div>
+      </div>
+      <div class="header-actions">
+        <div class="live-dot" id="liveDot">Live</div>
+      </div>
     </div>
   </div>
 
-  <div class="how-card">
-    <div class="how-title">🌐 Share with Family</div>
-    <div class="how-step">
-      <div class="how-num">✓</div>
-      <div class="how-text">Host this HTML file on <strong>GitHub Pages</strong> or <strong>Netlify (free)</strong> and share the link via WhatsApp</div>
+  <!-- Photos Section -->
+  <div class="section active" id="sec-photos">
+    <div class="sec-head">
+      <div class="sec-title">📸 Memories</div>
+      <button class="pill-btn" onclick="document.getElementById('photoFile').click()">+ Add</button>
     </div>
-    <div class="how-step">
-      <div class="how-num">✓</div>
-      <div class="how-text">Every family member who opens the link shares the <strong>same Supabase database</strong> — photos are synced in real time</div>
+
+    <!-- Members strip -->
+    <div class="members-strip" id="membersStrip"></div>
+
+    <!-- Upload -->
+    <input type="file" id="photoFile" accept="image/*" style="display:none" onchange="uploadPhoto(event)">
+    <div class="uploading" id="uploadingBar"><div class="spin"></div><p>Uploading photo…</p></div>
+
+    <!-- Grid -->
+    <div id="photoGrid"></div>
+
+    <label class="upload-zone" for="photoFile">
+      <span class="uz-icon">📷</span>
+      <p>Tap to share a memory</p>
+      <small>Instantly visible to all family members</small>
+    </label>
+  </div>
+
+  <!-- Events Section -->
+  <div class="section" id="sec-events">
+    <div class="sec-head">
+      <div class="sec-title">🗓️ Events</div>
+      <button class="pill-btn" onclick="toggleForm()">+ Add</button>
     </div>
-    <div class="how-step">
-      <div class="how-num">✓</div>
-      <div class="how-text">Supabase free tier: <strong>500MB storage</strong>, <strong>50,000 rows</strong> — more than enough for a family!</div>
+
+    <div class="month-nav">
+      <button class="mo-btn" onclick="changeMonth(-1)">◀</button>
+      <div class="month-name" id="monthName"></div>
+      <button class="mo-btn" onclick="changeMonth(1)">▶</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+
+    <div class="card hidden" id="addForm">
+      <div class="form-label">Event Name</div>
+      <input type="text" class="form-input" id="evtName" placeholder="e.g. Mom's Birthday 🎂">
+      <div class="form-row">
+        <div>
+          <div class="form-label">Date</div>
+          <input type="date" class="form-input" id="evtDate">
+        </div>
+        <div>
+          <div class="form-label">Type</div>
+          <select class="form-input" id="evtType">
+            <option value="birthday">🎂 Birthday</option>
+            <option value="anniversary">💍 Anniversary</option>
+            <option value="holiday">🎉 Holiday</option>
+            <option value="family">👨‍👩‍👧 Family</option>
+          </select>
+        </div>
+      </div>
+      <button class="pill-btn" style="width:100%" onclick="addEvent()">Save Event</button>
+    </div>
+
+    <div id="eventsList"></div>
+  </div>
+
+  <!-- Games Section -->
+  <div class="section" id="sec-games">
+    <div class="sec-head"><div class="sec-title">🎮 Family Fun</div></div>
+
+    <div id="gamePicker">
+      <div class="games-grid">
+        <div class="game-card" onclick="startQuiz()">
+          <span class="gi">🧠</span>
+          <div class="gt">Family Quiz</div>
+          <div class="gd">Test your family knowledge</div>
+          <span class="game-badge">5 Questions</span>
+        </div>
+        <div class="game-card" onclick="startMemory()">
+          <span class="gi">🃏</span>
+          <div class="gt">Memory Match</div>
+          <div class="gd">Flip & find the pairs</div>
+          <span class="game-badge">16 Cards</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="quiz-wrap hidden" id="quizGame">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <span style="font-size:0.78rem;font-weight:800;color:var(--muted);">FAMILY QUIZ</span>
+        <button onclick="exitGame()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;">✕</button>
+      </div>
+      <div class="quiz-prog" id="quizProg"></div>
+      <div id="quizContent"></div>
+    </div>
+
+    <div class="hidden" id="memoryGame">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span style="font-size:0.78rem;font-weight:800;color:var(--muted);">MEMORY MATCH</span>
+        <button onclick="exitGame()" style="background:none;border:none;font-size:1.2rem;cursor:pointer;">✕</button>
+      </div>
+      <div class="game-stats">
+        <div class="stat-c"><div class="stat-n" id="moveCnt">0</div><div class="stat-l">Moves</div></div>
+        <div class="stat-c"><div class="stat-n" id="matchCnt">0</div><div class="stat-l">Matches</div></div>
+        <div class="stat-c"><div class="stat-n" id="timeCnt">0</div><div class="stat-l">Secs</div></div>
+      </div>
+      <div class="match-grid" id="matchGrid"></div>
     </div>
   </div>
+
+  <!-- Profile Section -->
+  <div class="section" id="sec-profile">
+    <div class="sec-head"><div class="sec-title">👤 Profile</div></div>
+    <div class="profile-hero">
+      <img id="profileAvatar" src="" alt="avatar" onerror="this.style.display='none'">
+      <div class="p-name" id="profileName">—</div>
+      <div class="p-email" id="profileEmail">—</div>
+      <div id="profileRole" style="margin-top:8px;font-size:0.72rem;background:rgba(255,255,255,0.2);display:inline-block;padding:3px 12px;border-radius:50px;color:white;font-weight:800;"></div>
+    </div>
+
+    <!-- Family Members List -->
+    <div style="padding:6px 0 10px;">
+      <div style="font-family:'Fraunces',serif;font-size:1.1rem;font-weight:700;margin-bottom:12px;">👨‍👩‍👧 Family Members</div>
+      <div id="familyMembersList">
+        <div style="text-align:center;color:#ccc;padding:20px;font-weight:600;">Loading members…</div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="card">
+      <div style="font-size:0.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">🔐 How Access Control Works</div>
+      <div style="font-size:0.82rem;font-weight:600;color:#666;line-height:1.9;">
+        ① Google verifies your identity<br>
+        ② App checks <code style="background:#f5f5f5;padding:1px 6px;border-radius:4px;font-size:0.75rem;">family_members</code> table in Supabase<br>
+        ③ Email found → Welcome in ✅<br>
+        ④ Email not found → Access denied ❌<br>
+        ⑤ Admin adds/removes emails from Supabase dashboard
+      </div>
+    </div>
+
+    <button class="logout-btn" onclick="logout()">🚪 Sign Out</button>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showSec('photos',this)"><span class="nav-icon">📸</span>Photos</button>
+    <button class="nav-btn" onclick="showSec('events',this)"><span class="nav-icon">🗓️</span>Events</button>
+    <button class="nav-btn" onclick="showSec('games',this)"><span class="nav-icon">🎮</span>Games</button>
+    <button class="nav-btn" onclick="showSec('profile',this)"><span class="nav-icon">👤</span>Profile</button>
+  </nav>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
 <script>
-// ── Supabase state ──
-let supabase = null;
-const BUCKET = 'photos';
-const TABLE  = 'photos';
+// ══════════ CONFIG ══════════
+const BUCKET = 'photos', TABLE = 'photos';
+let sb = null, currentUser = null;
 
-// ── Load saved credentials ──
-window.addEventListener('load', () => {
-  const url = sessionStorage.getItem('sb_url');
-  const key = sessionStorage.getItem('sb_key');
-  if (url && key) {
-    document.getElementById('sbUrl').value = url;
-    document.getElementById('sbKey').value = key;
-    connectSupabase(true);
+function getSbConfig() {
+  const url = localStorage.getItem('sb_url') || '';
+  const key = localStorage.getItem('sb_key') || '';
+  return { url, key };
+}
+
+function saveConfig() {
+  const url = document.getElementById('cfgUrl').value.trim();
+  const key = document.getElementById('cfgKey').value.trim();
+  if (!url || !key) { toast('⚠️ Both fields required'); return; }
+  localStorage.setItem('sb_url', url);
+  localStorage.setItem('sb_key', key);
+  document.getElementById('setupWarning').style.display = 'none';
+  initSupabase();
+}
+
+function initSupabase() {
+  const { url, key } = getSbConfig();
+  if (!url || !key) {
+    document.getElementById('setupWarning').style.display = 'block';
+    return false;
   }
+  sb = window.supabase.createClient(url, key);
+  return true;
+}
+
+// ══════════ AUTH ══════════
+async function loginWithGoogle() {
+  if (!sb && !initSupabase()) return;
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if (error) toast('❌ ' + error.message);
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  document.getElementById('appShell').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  toast('👋 Signed out');
+}
+
+function setUserUI(user) {
+  const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Family';
+  const avatar = user.user_metadata?.avatar_url || '';
+  const email = user.email || '';
+
+  document.getElementById('headerName').textContent = name.split(' ')[0];
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileEmail').textContent = email;
+  document.getElementById('profileAvatar').src = avatar;
+
+  const wrap = document.getElementById('headerAvatarWrap');
+  if (avatar) {
+    wrap.innerHTML = `<img class="user-avatar" src="${avatar}" alt="${name}">`;
+  }
+
+  // Show role badge in profile
+  const roleEl = document.getElementById('profileRole');
+  if (roleEl) {
+    const role = user._familyRole || 'member';
+    roleEl.textContent = role === 'admin' ? '⭐ Admin' : '👤 Member';
+  }
+}
+
+// ══════════ BOOT ══════════
+window.addEventListener('load', async () => {
+  if (!initSupabase()) return;
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    currentUser = session.user;
+    await checkAndBoot();
+  }
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (session?.user) {
+      currentUser = session.user;
+      await checkAndBoot();
+    }
+  });
 });
 
-async function connectSupabase(silent = false) {
-  const url = document.getElementById('sbUrl').value.trim();
-  const key = document.getElementById('sbKey').value.trim();
-  const status = document.getElementById('setupStatus');
+// ── Check allowlist BEFORE letting user into the app ──
+async function checkAndBoot() {
+  const email = currentUser.email;
 
-  if (!url || !key) { showStatus('Please enter both URL and API key', 'err'); return; }
+  // Query the family_members table
+  const { data, error } = await sb
+    .from('family_members')
+    .select('email, role, nickname')
+    .eq('email', email)
+    .single();
 
-  try {
-    supabase = window.supabase.createClient(url, key);
-    // Test connection
-    const { error } = await supabase.from(TABLE).select('id').limit(1);
-    if (error) throw error;
-
-    // Success
-    sessionStorage.setItem('sb_url', url);
-    sessionStorage.setItem('sb_key', key);
-    setConnected(true);
-    if (!silent) showStatus('✅ Connected! Photos will now sync across all family members.', 'ok');
-    loadPhotos();
-    // Poll for new photos every 10s
-    setInterval(loadPhotos, 10000);
-  } catch (e) {
-    setConnected(false);
-    showStatus('❌ ' + (e.message || 'Connection failed. Check your URL and key.'), 'err');
+  if (error || !data) {
+    // Not in the family list — boot them out immediately
+    await sb.auth.signOut();
+    showAccessDenied(email);
+    return;
   }
+
+  // ✅ Approved family member — store their role & nickname
+  currentUser._familyRole     = data.role     || 'member';
+  currentUser._familyNickname = data.nickname || '';
+  bootApp();
 }
 
-function setConnected(ok) {
-  document.getElementById('connDot').className = 'conn-dot' + (ok ? ' live' : '');
-  document.getElementById('connLabel').textContent = ok ? 'Live sync' : 'Not connected';
+function showAccessDenied(email) {
+  const card = document.querySelector('.login-card');
+  card.innerHTML = `
+    <span style="font-size:3rem;display:block;margin-bottom:16px;">🚫</span>
+    <div style="font-family:'Fraunces',serif;font-size:1.6rem;color:white;font-weight:700;margin-bottom:10px;">Access Denied</div>
+    <p style="color:rgba(255,255,255,0.6);font-size:0.85rem;font-weight:600;margin-bottom:24px;line-height:1.6;">
+      <strong style="color:white;">${email}</strong><br>is not on the family member list.<br>Ask the family admin to add you!
+    </p>
+    <button onclick="location.reload()" style="width:100%;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:14px;padding:14px;color:white;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;">
+      ← Try another account
+    </button>`;
 }
 
-function showStatus(msg, type) {
-  const s = document.getElementById('setupStatus');
-  s.textContent = msg; s.className = 'setup-status ' + type;
+function bootApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appShell').style.display = 'block';
+  setUserUI(currentUser);
+  loadPhotos();
+  loadFamilyMembers();
+  renderCalendar();
+  setInterval(loadPhotos, 12000);
 }
 
-// ── Upload photo ──
+// ══════════ PHOTOS ══════════
 async function uploadPhoto(e) {
   const file = e.target.files[0];
-  if (!file) return;
-  if (!supabase) { toast('⚠️ Connect Supabase first!'); return; }
+  if (!file || !currentUser) return;
 
-  const name = document.getElementById('uploaderName').value.trim() || 'Family';
   const bar = document.getElementById('uploadingBar');
   bar.classList.add('show');
 
   try {
-    // 1. Upload file to Storage
     const path = `${Date.now()}_${file.name.replace(/\s/g,'_')}`;
-    const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: false });
+    const { error: upErr } = await sb.storage.from(BUCKET).upload(path, file);
     if (upErr) throw upErr;
 
-    // 2. Get public URL
-    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
-    const publicUrl = urlData.publicUrl;
+    const { data: urlData } = sb.storage.from(BUCKET).getPublicUrl(path);
 
-    // 3. Save metadata to DB
-    const { error: dbErr } = await supabase.from(TABLE).insert({ url: publicUrl, uploader: name });
+    const { error: dbErr } = await sb.from(TABLE).insert({
+      url: urlData.publicUrl,
+      uploader: currentUser.user_metadata?.full_name || currentUser.email,
+      uploader_avatar: currentUser.user_metadata?.avatar_url || '',
+      uploader_id: currentUser.id
+    });
     if (dbErr) throw dbErr;
 
-    toast('🎉 Photo shared with family!');
+    toast('🎉 Shared with family!');
     await loadPhotos();
   } catch (err) {
-    toast('❌ Upload failed: ' + err.message);
+    toast('❌ ' + err.message);
   } finally {
     bar.classList.remove('show');
     e.target.value = '';
   }
 }
 
-// ── Load all photos ──
 async function loadPhotos() {
-  if (!supabase) return;
-  const { data, error } = await supabase.from(TABLE).select('*').order('created_at', { ascending: false });
+  if (!sb) return;
+  const { data, error } = await sb.from(TABLE).select('*').order('created_at', { ascending: false });
   if (error || !data) return;
 
   const grid = document.getElementById('photoGrid');
+
   if (!data.length) {
-    grid.innerHTML = `<div class="photo-cell" style="background:linear-gradient(135deg,#ffd6b3,#ffb380)">🌅<div class="photo-label">No photos yet!</div></div>`;
+    grid.innerHTML = `<div class="empty-state"><span class="es-icon">📷</span><p>No photos yet</p><small>Be the first to share a memory!</small></div>`;
+    document.getElementById('membersStrip').innerHTML = '';
     return;
   }
 
-  grid.innerHTML = data.map(p => `
+  // Render photos
+  grid.innerHTML = `<div class="photo-grid">${data.map(p => `
     <div class="photo-cell">
-      <img src="${p.url}" alt="family photo" loading="lazy">
-      <div class="uploader-tag">👤 ${p.uploader || 'Family'}</div>
-      <div class="photo-label">${timeAgo(p.created_at)}</div>
-    </div>
-  `).join('');
+      <img src="${p.url}" loading="lazy" alt="family photo">
+      <div class="ph-meta">
+        <div class="ph-uploader">
+          ${p.uploader_avatar ? `<img class="ph-avatar" src="${p.uploader_avatar}">` : ''}
+          <span class="ph-name">${(p.uploader||'Family').split(' ')[0]}</span>
+        </div>
+        <span class="ph-time">${timeAgo(p.created_at)}</span>
+      </div>
+    </div>`).join('')}</div>`;
+
+  // Members strip
+  const byMember = {};
+  data.forEach(p => {
+    const id = p.uploader_id || p.uploader;
+    if (!byMember[id]) byMember[id] = { name: p.uploader, avatar: p.uploader_avatar, count: 0 };
+    byMember[id].count++;
+  });
+  document.getElementById('membersStrip').innerHTML = Object.values(byMember).map(m => `
+    <div class="member-chip">
+      ${m.avatar ? `<img src="${m.avatar}" alt="${m.name}">` : '<span style="font-size:1rem">👤</span>'}
+      <div><div class="mc-name">${(m.name||'Family').split(' ')[0]}</div><div class="mc-count">${m.count} photo${m.count>1?'s':''}</div></div>
+    </div>`).join('');
 }
 
-// ── Helpers ──
-function timeAgo(ts) {
-  const diff = (Date.now() - new Date(ts)) / 1000;
-  if (diff < 60) return 'Just now';
-  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
-  return Math.floor(diff/86400) + 'd ago';
+// ══════════ EVENTS ══════════
+let calDate = new Date(2026, 2, 1);
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const TYPE_ICONS = { birthday:'🎂', anniversary:'💍', holiday:'🎉', family:'👨‍👩‍👧' };
+
+let events = [
+  { name:"Mom's Birthday 🎂", date:'2026-03-15', type:'birthday' },
+  { name:"Family Lunch 🍽️", date:'2026-03-22', type:'family' },
+  { name:"Wedding Anniversary 💍", date:'2026-04-10', type:'anniversary' },
+];
+
+function renderCalendar() {
+  const yr = calDate.getFullYear(), mo = calDate.getMonth();
+  document.getElementById('monthName').textContent = `${MONTHS[mo]} ${yr}`;
+
+  const evDays = new Set(events.filter(e => { const d = new Date(e.date); return d.getFullYear()===yr && d.getMonth()===mo; }).map(e => new Date(e.date).getDate()));
+  const first = new Date(yr,mo,1).getDay();
+  const total = new Date(yr,mo+1,0).getDate();
+  const prev  = new Date(yr,mo,0).getDate();
+  const today = new Date();
+
+  let h = ['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<div class="cal-dname">${d}</div>`).join('');
+  for (let i=0;i<first;i++) h+=`<div class="cal-day other">${prev-first+i+1}</div>`;
+  for (let d=1;d<=total;d++) {
+    const isTd = d===today.getDate() && mo===today.getMonth() && yr===today.getFullYear();
+    h+=`<div class="cal-day ${isTd?'today':''} ${evDays.has(d)?'has-event':''}">${d}</div>`;
+  }
+  for (let d=1;d<=42-first-total;d++) h+=`<div class="cal-day other">${d}</div>`;
+  document.getElementById('calGrid').innerHTML = h;
+
+  const today2 = new Date();
+  const upcoming = events.filter(e=>new Date(e.date)>=new Date(yr,mo,1)).sort((a,b)=>new Date(a.date)-new Date(b.date)).slice(0,5);
+  document.getElementById('eventsList').innerHTML = upcoming.length ? upcoming.map(ev => {
+    const d = new Date(ev.date);
+    const diff = Math.ceil((d-today2)/86400000);
+    const badge = diff===0?'Today! 🎉':diff===1?'Tomorrow':`In ${diff} days`;
+    return `<div class="event-card">
+      <div class="ev-icon ${ev.type}">${TYPE_ICONS[ev.type]}</div>
+      <div class="ev-info"><div class="ev-name">${ev.name}</div><div class="ev-date">${d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}</div></div>
+      <span class="ev-badge">${badge}</span>
+    </div>`;
+  }).join('') : '<div style="text-align:center;color:#ccc;padding:20px;font-weight:600;">No upcoming events</div>';
 }
 
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+function changeMonth(d) { calDate.setMonth(calDate.getMonth()+d); renderCalendar(); }
+function toggleForm() { document.getElementById('addForm').classList.toggle('hidden'); }
+function addEvent() {
+  const name = document.getElementById('evtName').value.trim();
+  const date = document.getElementById('evtDate').value;
+  const type = document.getElementById('evtType').value;
+  if (!name||!date) { toast('⚠️ Fill in all fields'); return; }
+  events.push({name,date,type});
+  document.getElementById('evtName').value='';
+  document.getElementById('addForm').classList.add('hidden');
+  renderCalendar();
+  toast('✅ Event added!');
 }
 
-function showSection(id, btn) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+// ══════════ GAMES ══════════
+const quizData = [
+  { q:"Which festival is known as the festival of lights? 🪔", opts:["Diwali","Holi","Eid","Christmas"], ans:0 },
+  { q:"What does a family share most? 💕", opts:["WiFi password","Memories","Food","All of these!"], ans:3 },
+  { q:"Best family bonding activity? 🍕", opts:["Silent dinner","Movie night","Arguing about remote","Cooking together"], ans:3 },
+  { q:"How many photos does an average family take per year? 📸", opts:["100","500","1,000+","Depends on mom!"], ans:3 },
+  { q:"A family that _____ together, stays together 😄", opts:["Plays","Prays","Eats","All of the above!"], ans:3 },
+];
+let qIdx=0, score=0, qAnswered=false;
+
+function startQuiz() {
+  qIdx=0; score=0; qAnswered=false;
+  document.getElementById('gamePicker').classList.add('hidden');
+  document.getElementById('quizGame').classList.remove('hidden');
+  renderQ();
+}
+function renderQ() {
+  const prog = document.getElementById('quizProg');
+  prog.innerHTML = quizData.map((_,i)=>`<div class="qp-dot ${i<qIdx?'done':i===qIdx?'cur':''}"></div>`).join('');
+  if (qIdx>=quizData.length) {
+    document.getElementById('quizContent').innerHTML=`<div class="score-wrap"><div class="score-num">${score}/${quizData.length}</div><div class="score-lbl">${score>=4?'🏆 Family Expert!':score>=2?'😊 Good try!':'🤔 Keep playing!'}</div></div><button class="pill-btn" style="width:100%;margin-top:16px" onclick="startQuiz()">Play Again 🔄</button>`;
+    return;
+  }
+  qAnswered=false;
+  const q=quizData[qIdx];
+  document.getElementById('quizContent').innerHTML=`<div class="quiz-q">${q.q}</div><div class="quiz-opts">${q.opts.map((o,i)=>`<button class="qopt" onclick="answerQ(${i},this)">${o}</button>`).join('')}</div>`;
+}
+function answerQ(idx,btn) {
+  if(qAnswered)return; qAnswered=true;
+  const q=quizData[qIdx];
+  document.querySelectorAll('.qopt')[q.ans].classList.add('correct');
+  if(idx!==q.ans)btn.classList.add('wrong'); else score++;
+  setTimeout(()=>{qIdx++;renderQ();},850);
+}
+
+const memEmojis=['🌺','🎂','🏖️','🎉','🪔','🌙','🍛','🎈'];
+let mCards=[],mFlipped=[],mMatched=0,mMoves=0,mTimer=null,mSecs=0;
+
+function startMemory() {
+  document.getElementById('gamePicker').classList.add('hidden');
+  document.getElementById('memoryGame').classList.remove('hidden');
+  mMoves=0;mMatched=0;mSecs=0;mFlipped=[];
+  ['moveCnt','matchCnt','timeCnt'].forEach(id=>document.getElementById(id).textContent='0');
+  clearInterval(mTimer);
+  mTimer=setInterval(()=>{mSecs++;document.getElementById('timeCnt').textContent=mSecs;},1000);
+  mCards=[...memEmojis,...memEmojis].sort(()=>Math.random()-0.5);
+  document.getElementById('matchGrid').innerHTML=mCards.map((e,i)=>`
+    <div class="mc" id="mc${i}" onclick="flipMC(${i})">
+      <div class="mfront">?</div><div class="mback">${e}</div>
+    </div>`).join('');
+}
+function flipMC(i) {
+  const c=document.getElementById('mc'+i);
+  if(mFlipped.length===2||c.classList.contains('flip')||c.classList.contains('matched'))return;
+  c.classList.add('flip'); mFlipped.push(i);
+  if(mFlipped.length===2) {
+    mMoves++; document.getElementById('moveCnt').textContent=mMoves;
+    const [a,b]=mFlipped;
+    if(mCards[a]===mCards[b]) {
+      document.getElementById('mc'+a).classList.add('matched');
+      document.getElementById('mc'+b).classList.add('matched');
+      mMatched++; document.getElementById('matchCnt').textContent=mMatched;
+      mFlipped=[];
+      if(mMatched===8){clearInterval(mTimer);setTimeout(()=>toast(`🏆 Won in ${mMoves} moves & ${mSecs}s!`),200);}
+    } else {
+      setTimeout(()=>{document.getElementById('mc'+a).classList.remove('flip');document.getElementById('mc'+b).classList.remove('flip');mFlipped=[];},850);
+    }
+  }
+}
+
+function exitGame() {
+  document.getElementById('gamePicker').classList.remove('hidden');
+  document.getElementById('quizGame').classList.add('hidden');
+  document.getElementById('memoryGame').classList.add('hidden');
+  clearInterval(mTimer);
+}
+
+// ══════════ FAMILY MEMBERS ══════════
+async function loadFamilyMembers() {
+  const { data, error } = await sb
+    .from('family_members')
+    .select('email, nickname, role, joined_at')
+    .order('joined_at', { ascending: true });
+
+  if (error || !data) return;
+
+  const container = document.getElementById('familyMembersList');
+  if (!container) return;
+
+  container.innerHTML = data.map(m => {
+    const isMe = m.email === currentUser.email;
+    const initial = (m.nickname || m.email)[0].toUpperCase();
+    const roleColor = m.role === 'admin' ? '#f4a261' : '#52b788';
+    return `
+      <div style="display:flex;align-items:center;gap:12px;background:white;border-radius:14px;padding:13px 15px;margin-bottom:9px;box-shadow:var(--shadow);">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--forest),var(--sage));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:1rem;flex-shrink:0;">${initial}</div>
+        <div style="flex:1;">
+          <div style="font-weight:800;font-size:0.9rem;">${m.nickname || m.email.split('@')[0]} ${isMe ? '<span style="font-size:0.65rem;background:rgba(45,106,79,0.1);color:var(--forest);padding:2px 7px;border-radius:50px;font-weight:800;">You</span>' : ''}</div>
+          <div style="font-size:0.72rem;color:var(--muted);font-weight:600;">${m.email}</div>
+        </div>
+        <span style="font-size:0.65rem;font-weight:800;color:${roleColor};background:${roleColor}18;padding:3px 10px;border-radius:50px;">${m.role || 'member'}</span>
+      </div>`;
+  }).join('');
+}
+
+// ══════════ HELPERS ══════════
+function showSec(id, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('sec-'+id).classList.add('active');
   btn.classList.add('active');
+}
+function timeAgo(ts) {
+  const d=(Date.now()-new Date(ts))/1000;
+  if(d<60)return'Just now';
+  if(d<3600)return Math.floor(d/60)+'m ago';
+  if(d<86400)return Math.floor(d/3600)+'h ago';
+  return Math.floor(d/86400)+'d ago';
+}
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
 }
 </script>
 </body>
