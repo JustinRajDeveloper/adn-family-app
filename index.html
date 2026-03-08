@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#ff6b35">
+<title>Our Family 🏡</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<!-- ✅ Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+  --orange: #ff6b35; --amber: #ffa040; --green: #06d6a0;
+  --pink: #ef476f; --blue: #118ab2; --yellow: #ffd166;
+  --cream: #fff9f0; --dark: #1a1205; --shadow: 0 4px 24px rgba(255,107,53,0.12);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family:'Nunito',sans-serif; background:var(--cream); color:var(--dark);
+  min-height:100vh; max-width:430px; margin:0 auto; padding-bottom:90px; overflow-x:hidden;
+}
+
+/* ── Setup Banner ── */
+#setupBanner {
+  background: linear-gradient(135deg,#1a1a2e,#16213e);
+  color:white; padding:20px; margin:0; font-size:0.82rem; line-height:1.6;
+}
+#setupBanner h3 { font-size:1rem; margin-bottom:10px; color:var(--yellow); }
+#setupBanner code { background:rgba(255,255,255,0.12); padding:2px 7px; border-radius:5px; font-size:0.78rem; }
+.setup-inputs { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+.setup-input {
+  background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2);
+  border-radius:8px; padding:10px 12px; color:white; font-family:'Nunito',sans-serif;
+  font-size:0.82rem; outline:none; width:100%;
+}
+.setup-input::placeholder { color:rgba(255,255,255,0.4); }
+.setup-btn {
+  background:var(--orange); color:white; border:none; border-radius:8px;
+  padding:10px 16px; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.85rem;
+  cursor:pointer; width:100%; margin-top:4px;
+}
+.setup-status { font-size:0.75rem; margin-top:8px; padding:6px 10px; border-radius:6px; display:none; }
+.setup-status.ok { background:rgba(6,214,160,0.2); color:#06d6a0; display:block; }
+.setup-status.err { background:rgba(239,71,111,0.2); color:#ef476f; display:block; }
+
+/* ── Header ── */
+.app-header {
+  background:linear-gradient(135deg,var(--orange),var(--amber));
+  padding:40px 24px 24px; position:relative; overflow:hidden;
+}
+.app-header::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at 70% 50%, rgba(255,255,255,0.12) 0%, transparent 60%);
+}
+.header-row { display:flex; align-items:center; justify-content:space-between; position:relative; }
+.header-title { font-family:'Fraunces',serif; font-size:1.9rem; color:white; font-weight:700; line-height:1.1; }
+.header-title span { font-style:italic; font-weight:300; font-size:0.9rem; color:rgba(255,255,255,0.8); display:block; margin-bottom:2px; }
+.conn-badge {
+  display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.2);
+  border-radius:50px; padding:6px 12px; font-size:0.7rem; font-weight:800; color:white;
+}
+.conn-dot { width:7px; height:7px; border-radius:50%; background:#aaa; }
+.conn-dot.live { background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* ── Nav ── */
+.bottom-nav {
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:430px; background:white;
+  display:flex; border-top:1px solid rgba(0,0,0,0.07); z-index:100;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.08); border-radius:20px 20px 0 0; overflow:hidden;
+}
+.nav-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:12px 0 8px; background:none; border:none; cursor:pointer;
+  font-family:'Nunito',sans-serif; font-size:0.62rem; font-weight:800; color:#ccc;
+  letter-spacing:0.5px; text-transform:uppercase; transition:color 0.2s;
+}
+.nav-icon { font-size:1.4rem; margin-bottom:3px; transition:transform 0.2s; }
+.nav-btn.active { color:var(--orange); }
+.nav-btn.active .nav-icon { transform:scale(1.15); }
+
+/* ── Sections ── */
+.section { display:none; padding:0 16px 16px; animation:fadeIn 0.3s ease; }
+.section.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.sec-header { padding:18px 0 12px; display:flex; align-items:center; justify-content:space-between; }
+.sec-title { font-family:'Fraunces',serif; font-size:1.4rem; font-weight:700; }
+.sec-action {
+  background:var(--orange); color:white; border:none; border-radius:50px;
+  padding:8px 16px; font-size:0.78rem; font-weight:800; font-family:'Nunito',sans-serif; cursor:pointer;
+}
+
+/* ── Photo Grid ── */
+.photo-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.photo-cell {
+  aspect-ratio:1; border-radius:10px; overflow:hidden; position:relative; cursor:pointer;
+  background:linear-gradient(135deg,#ffe4cc,#ffd6b3);
+  display:flex; align-items:center; justify-content:center; font-size:2rem;
+  transition:transform 0.2s;
+}
+.photo-cell:active { transform:scale(0.96); }
+.photo-cell img { width:100%; height:100%; object-fit:cover; }
+.photo-cell .photo-label {
+  position:absolute; bottom:0; left:0; right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,0.55));
+  color:white; font-size:0.62rem; font-weight:800; padding:8px 5px 5px;
+}
+.photo-cell .uploader-tag {
+  position:absolute; top:5px; right:5px;
+  background:rgba(0,0,0,0.5); color:white; font-size:0.55rem; font-weight:700;
+  padding:2px 6px; border-radius:50px;
+}
+
+.upload-area {
+  border:2px dashed rgba(255,107,53,0.3); border-radius:16px; padding:22px;
+  text-align:center; margin-top:14px; background:rgba(255,107,53,0.04); cursor:pointer;
+  transition:background 0.2s; display:block;
+}
+.upload-area:hover { background:rgba(255,107,53,0.09); }
+.upload-area input { display:none; }
+.upload-area .u-icon { font-size:2rem; margin-bottom:8px; display:block; }
+.upload-area p { font-size:0.82rem; color:#aaa; font-weight:700; }
+
+/* Uploading spinner */
+.uploading-bar {
+  background:white; border-radius:14px; padding:14px 16px; margin-top:10px;
+  box-shadow:var(--shadow); display:none; align-items:center; gap:12px;
+}
+.uploading-bar.show { display:flex; }
+.spin { width:22px; height:22px; border:3px solid #f0f0f0; border-top-color:var(--orange);
+  border-radius:50%; animation:spin 0.7s linear infinite; flex-shrink:0; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.uploading-bar p { font-size:0.82rem; font-weight:700; color:#888; }
+
+/* ── Name Input ── */
+.name-bar {
+  background:white; border-radius:14px; padding:12px 16px; margin-bottom:14px;
+  box-shadow:var(--shadow); display:flex; align-items:center; gap:10px;
+}
+.name-bar span { font-size:1.2rem; }
+.name-input {
+  flex:1; border:none; outline:none; font-family:'Nunito',sans-serif;
+  font-size:0.9rem; font-weight:700; color:var(--dark); background:none;
+}
+.name-input::placeholder { color:#ccc; }
+
+/* ── How It Works ── */
+.how-card {
+  background:white; border-radius:16px; padding:18px; box-shadow:var(--shadow); margin-top:14px;
+}
+.how-title { font-weight:800; font-size:0.85rem; color:#999; text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+.how-step { display:flex; gap:12px; align-items:flex-start; margin-bottom:10px; }
+.how-num { width:26px; height:26px; border-radius:50%; background:var(--orange); color:white; font-size:0.75rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.how-text { font-size:0.82rem; font-weight:600; color:#666; line-height:1.4; }
+.how-text strong { color:var(--dark); }
+
+/* ── Toast ── */
+#toast {
+  position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--dark); color:white; padding:10px 20px; border-radius:50px;
+  font-size:0.82rem; font-weight:700; opacity:0; transition:all 0.3s; z-index:999; white-space:nowrap;
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP BANNER ══ -->
+<div id="setupBanner">
+  <h3>⚡ Step 1 — Connect Supabase</h3>
+  <p>Create a free project at <code>supabase.com</code>, then paste your credentials below. Only takes 2 minutes!</p>
+  <div class="setup-inputs">
+    <input class="setup-input" id="sbUrl" placeholder="Project URL  (https://xxxx.supabase.co)" type="url">
+    <input class="setup-input" id="sbKey" placeholder="Anon public key  (eyJ...)" type="text">
+    <button class="setup-btn" onclick="connectSupabase()">🔌 Connect & Test</button>
+  </div>
+  <div class="setup-status" id="setupStatus"></div>
+</div>
+
+<!-- ══ APP HEADER ══ -->
+<div class="app-header">
+  <div class="header-row">
+    <div class="header-title"><span>Welcome to</span>Our Family</div>
+    <div class="conn-badge">
+      <div class="conn-dot" id="connDot"></div>
+      <span id="connLabel">Not connected</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PHOTOS SECTION ══ -->
+<div class="section active" id="sec-photos">
+  <div class="sec-header">
+    <div class="sec-title">📸 Memories</div>
+    <button class="sec-action" onclick="document.getElementById('photoFile').click()">+ Add Photo</button>
+  </div>
+
+  <!-- Your name -->
+  <div class="name-bar">
+    <span>👤</span>
+    <input class="name-input" id="uploaderName" placeholder="Your name (shows on photo)" maxlength="20">
+  </div>
+
+  <!-- Uploading indicator -->
+  <div class="uploading-bar" id="uploadingBar">
+    <div class="spin"></div>
+    <p>Uploading to Supabase…</p>
+  </div>
+
+  <!-- Photo grid -->
+  <div class="photo-grid" id="photoGrid">
+    <div class="photo-cell" style="background:linear-gradient(135deg,#ffd6b3,#ffb380)">🌅
+      <div class="photo-label">Add your first photo!</div>
+    </div>
+  </div>
+
+  <label class="upload-area" for="photoFile">
+    <input type="file" id="photoFile" accept="image/*" onchange="uploadPhoto(event)">
+    <span class="u-icon">📷</span>
+    <p>Tap to upload — family sees it instantly</p>
+  </label>
+
+  <!-- How it works -->
+  <div class="how-card">
+    <div class="how-title">How shared photos work</div>
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <div class="how-text"><strong>You upload a photo</strong> — it goes straight to Supabase Storage (cloud)</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <div class="how-text"><strong>Supabase stores the file</strong> + saves the URL & your name in a database table</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <div class="how-text"><strong>Anyone who opens this app</strong> fetches all photos from the same database — they see everything!</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BOTTOM NAV ══ -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showSection('photos',this)">
+    <span class="nav-icon">📸</span>Photos
+  </button>
+  <button class="nav-btn" onclick="showSection('info',this)">
+    <span class="nav-icon">📖</span>Setup Guide
+  </button>
+</nav>
+
+<!-- Info / Setup Guide Section -->
+<div class="section" id="sec-info">
+  <div class="sec-header"><div class="sec-title">📖 Setup Guide</div></div>
+
+  <div class="how-card" style="margin-bottom:12px;">
+    <div class="how-title">🛠 One-time Supabase Setup (5 min)</div>
+
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <div class="how-text">Go to <strong>supabase.com</strong> → New Project → pick a name like "family-app"</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <div class="how-text">In <strong>Storage</strong> → Create bucket called <strong>photos</strong> → set to <strong>Public</strong></div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <div class="how-text">In <strong>SQL Editor</strong> → run this query to create the photos table:</div>
+    </div>
+    <pre style="background:#f5f5f5;border-radius:10px;padding:12px;font-size:0.72rem;overflow-x:auto;margin:8px 0 10px;line-height:1.6;">CREATE TABLE photos (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  url text NOT NULL,
+  uploader text DEFAULT 'Family',
+  caption text,
+  created_at timestamptz DEFAULT now()
+);
+
+-- Allow anyone to read & insert
+ALTER TABLE photos ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "public read" ON photos FOR SELECT USING (true);
+CREATE POLICY "public insert" ON photos FOR INSERT WITH CHECK (true);</pre>
+
+    <div class="how-step">
+      <div class="how-num">4</div>
+      <div class="how-text">In <strong>Storage → Policies</strong> → add policy: allow <strong>public uploads</strong> to the photos bucket</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">5</div>
+      <div class="how-text">Go to <strong>Project Settings → API</strong> → copy <strong>Project URL</strong> and <strong>anon public key</strong></div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">6</div>
+      <div class="how-text">Paste both into the <strong>Connect Supabase</strong> form at the top — done! 🎉</div>
+    </div>
+  </div>
+
+  <div class="how-card">
+    <div class="how-title">🌐 Share with Family</div>
+    <div class="how-step">
+      <div class="how-num">✓</div>
+      <div class="how-text">Host this HTML file on <strong>GitHub Pages</strong> or <strong>Netlify (free)</strong> and share the link via WhatsApp</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">✓</div>
+      <div class="how-text">Every family member who opens the link shares the <strong>same Supabase database</strong> — photos are synced in real time</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">✓</div>
+      <div class="how-text">Supabase free tier: <strong>500MB storage</strong>, <strong>50,000 rows</strong> — more than enough for a family!</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ── Supabase state ──
+let supabase = null;
+const BUCKET = 'photos';
+const TABLE  = 'photos';
+
+// ── Load saved credentials ──
+window.addEventListener('load', () => {
+  const url = sessionStorage.getItem('sb_url');
+  const key = sessionStorage.getItem('sb_key');
+  if (url && key) {
+    document.getElementById('sbUrl').value = url;
+    document.getElementById('sbKey').value = key;
+    connectSupabase(true);
+  }
+});
+
+async function connectSupabase(silent = false) {
+  const url = document.getElementById('sbUrl').value.trim();
+  const key = document.getElementById('sbKey').value.trim();
+  const status = document.getElementById('setupStatus');
+
+  if (!url || !key) { showStatus('Please enter both URL and API key', 'err'); return; }
+
+  try {
+    supabase = window.supabase.createClient(url, key);
+    // Test connection
+    const { error } = await supabase.from(TABLE).select('id').limit(1);
+    if (error) throw error;
+
+    // Success
+    sessionStorage.setItem('sb_url', url);
+    sessionStorage.setItem('sb_key', key);
+    setConnected(true);
+    if (!silent) showStatus('✅ Connected! Photos will now sync across all family members.', 'ok');
+    loadPhotos();
+    // Poll for new photos every 10s
+    setInterval(loadPhotos, 10000);
+  } catch (e) {
+    setConnected(false);
+    showStatus('❌ ' + (e.message || 'Connection failed. Check your URL and key.'), 'err');
+  }
+}
+
+function setConnected(ok) {
+  document.getElementById('connDot').className = 'conn-dot' + (ok ? ' live' : '');
+  document.getElementById('connLabel').textContent = ok ? 'Live sync' : 'Not connected';
+}
+
+function showStatus(msg, type) {
+  const s = document.getElementById('setupStatus');
+  s.textContent = msg; s.className = 'setup-status ' + type;
+}
+
+// ── Upload photo ──
+async function uploadPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!supabase) { toast('⚠️ Connect Supabase first!'); return; }
+
+  const name = document.getElementById('uploaderName').value.trim() || 'Family';
+  const bar = document.getElementById('uploadingBar');
+  bar.classList.add('show');
+
+  try {
+    // 1. Upload file to Storage
+    const path = `${Date.now()}_${file.name.replace(/\s/g,'_')}`;
+    const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: false });
+    if (upErr) throw upErr;
+
+    // 2. Get public URL
+    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
+    const publicUrl = urlData.publicUrl;
+
+    // 3. Save metadata to DB
+    const { error: dbErr } = await supabase.from(TABLE).insert({ url: publicUrl, uploader: name });
+    if (dbErr) throw dbErr;
+
+    toast('🎉 Photo shared with family!');
+    await loadPhotos();
+  } catch (err) {
+    toast('❌ Upload failed: ' + err.message);
+  } finally {
+    bar.classList.remove('show');
+    e.target.value = '';
+  }
+}
+
+// ── Load all photos ──
+async function loadPhotos() {
+  if (!supabase) return;
+  const { data, error } = await supabase.from(TABLE).select('*').order('created_at', { ascending: false });
+  if (error || !data) return;
+
+  const grid = document.getElementById('photoGrid');
+  if (!data.length) {
+    grid.innerHTML = `<div class="photo-cell" style="background:linear-gradient(135deg,#ffd6b3,#ffb380)">🌅<div class="photo-label">No photos yet!</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = data.map(p => `
+    <div class="photo-cell">
+      <img src="${p.url}" alt="family photo" loading="lazy">
+      <div class="uploader-tag">👤 ${p.uploader || 'Family'}</div>
+      <div class="photo-label">${timeAgo(p.created_at)}</div>
+    </div>
+  `).join('');
+}
+
+// ── Helpers ──
+function timeAgo(ts) {
+  const diff = (Date.now() - new Date(ts)) / 1000;
+  if (diff < 60) return 'Just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return Math.floor(diff/86400) + 'd ago';
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>
